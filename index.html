@@ -6,6 +6,155 @@
     <title>FERRETERIA CONSTRUMOLE</title>
 </head>
 <body>
-    
+    <div class="welcome-section">
+        <h1>Bienvenido a Ferretería Contrumole</h1>
+    </div>
+
+    <div class="login-container" id="login-container">
+        <form id="admin-login-form">
+            <h2>Inicio de Sesión del Administrador</h2>
+            <label for="admin-username">Usuario:</label>
+            <input type="text" id="admin-username" required>
+
+            <label for="admin-password">Contraseña:</label>
+            <input type="password" id="admin-password" required>
+
+            <button type="button" onclick="adminLogin()">Iniciar Sesión</button>
+        </form>
+    </div>
+
+    <div class="admin-container" id="admin-container">
+        <h2>Administración de Items</h2>
+
+        
+        <div class="form-container" id="product-form-container">
+            <h3>Agregar Nuevo Item</h3>
+            <form id="add-item-form">
+                <label for="item-name">Nombre del Item:</label>
+                <input type="text" id="item-name" required>
+
+                <label for="item-price">Precio:</label>
+                <input type="number" id="item-price" required>
+
+                <button type="button" onclick="addItem()">Agregar Item</button>
+            </form>
+        </div>
+
+        <div id="item-list" class="item-list">
+            <!-- Aquí se mostrarán los elementos -->
+        </div>
+    </div>
+
+    <script>
+        const fakeBackend = {
+            adminCredentials: {
+                username: "admin",
+                password: "admin123",
+            },
+            items: [],
+        };
+
+        let isAdminLoggedIn = false;
+
+        function adminLogin() {
+            const enteredUsername = document.getElementById('admin-username').value;
+            const enteredPassword = document.getElementById('admin-password').value;
+
+            simulateServerCall().then(() => {
+                if (
+                    (enteredUsername === fakeBackend.adminCredentials.username && enteredPassword === fakeBackend.adminCredentials.password) ||
+                    (enteredUsername === "RobinsonVergara" && enteredPassword === "12345")
+                ) {
+                    isAdminLoggedIn = true;
+                    alert('Inicio de sesión exitoso.');
+                    showAdminContainer();
+                    displayItems();
+                } else {
+                    alert('Credenciales incorrectas. Intenta de nuevo.');
+                }
+            });
+        }
+
+        function showAdminContainer() {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('admin-container').style.display = 'block';
+        }
+
+        function addItem() {
+            if (isAdminLoggedIn) {
+                const itemName = document.getElementById('item-name').value;
+                const itemPrice = document.getElementById('item-price').value;
+
+                if (itemName && itemPrice) {
+                    const newItem = {
+                        name: itemName,
+                        price: parseFloat(itemPrice),
+                    };
+
+                    simulateServerCall().then(() => {
+                        fakeBackend.items.push(newItem);
+                        displayItems();
+                    });
+                } else {
+                    alert('Por favor, complete todos los campos.');
+                }
+            } else {
+                alert('Debe iniciar sesión como administrador para agregar items.');
+            }
+        }
+
+        function displayItems() {
+            const itemListContainer = document.getElementById('item-list');
+            itemListContainer.innerHTML = '';
+
+            fakeBackend.items.forEach((item, index) => {
+                const itemElement = document.createElement('div');
+                itemElement.classList.add('item');
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('button-delete');
+                deleteButton.textContent = 'Eliminar';
+                deleteButton.addEventListener('click', () => deleteItem(index));
+
+                const editButton = document.createElement('button');
+                editButton.classList.add('button-edit');
+                editButton.textContent = 'Editar';
+                editButton.addEventListener('click', () => editItem(index));
+
+                itemElement.innerHTML = `<strong>${item.name}</strong> - $${item.price.toFixed(2)}`;
+                itemElement.appendChild(editButton);
+                itemElement.appendChild(deleteButton);
+
+                itemListContainer.appendChild(itemElement);
+            });
+        }
+
+        function deleteItem(index) {
+            if (isAdminLoggedIn) {
+                simulateServerCall().then(() => {
+                    fakeBackend.items.splice(index, 1);
+                    displayItems();
+                });
+            } else {
+                alert('Debe iniciar sesión como administrador para eliminar items.');
+            }
+        }
+
+        function editItem(index) {
+            const newName = prompt('Ingrese el nuevo nombre del item:');
+            const newPrice = prompt('Ingrese el nuevo precio del item:');
+            
+            if (newName !== null && newPrice !== null) {
+                fakeBackend.items[index].name = newName;
+                fakeBackend.items[index].price = parseFloat(newPrice);
+                displayItems();
+            }
+        }
+
+        function simulateServerCall() {
+            return new Promise(resolve => setTimeout(resolve, 1000));
+        }
+    </script>
+ 
 </body>
 </html>
